@@ -9,7 +9,7 @@ class Column {
 }
 
 function generateColumns(arr) {
-  return !arr.length ? [] : arr.map(col => new Column({...col}));
+  return !arr.length ? [] : arr.map((col) => new Column({ ...col }));
 }
 
 module.exports = {

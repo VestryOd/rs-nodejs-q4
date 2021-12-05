@@ -1,11 +1,13 @@
-const boards = require('../../common/db/boards.json');
+const boardsDocument = require('../../common/db/boards') ;
 const Board = require('./board.model');
 
-const getAllBoards = async () => Promise.resolve(boards);
+const DB = boardsDocument.map((el) => new Board(el));
 
-const findBoard = boardId => {
-  const board = {};
-  boards.forEach((el, i) => {
+const getAllBoards = async () => Promise.resolve(DB);
+
+const findBoard = (boardId) => {
+  const board = { index: 0, data: {} };
+  DB.forEach((el, i) => {
     if (el.id === boardId) {
       board.index = i;
       board.data = { ...el };
@@ -14,14 +16,14 @@ const findBoard = boardId => {
   return board;
 };
 
-const createBoard = async payload => {
+const createBoard = async (payload) => {
   const board = new Board({ ...payload });
-  boards.push(board);
+  DB.push(board);
   return Promise.resolve({ ...board });
 };
 
-const getBoardById = async boardId => {
-  const result = boards.find(board => board.id === boardId);
+const getBoardById = async (boardId) => {
+  const result = DB.find((board) => board.id === boardId);
   if (!result) return null;
   return Promise.resolve({ ...result });
 };
@@ -29,29 +31,23 @@ const getBoardById = async boardId => {
 const updateBoard = async (boardId, payload) => {
   const { data, index } = findBoard(boardId);
   if (data && index) {
-    boards[index] = {
+    DB[index] = {
       ...data,
-      ...payload
+      ...payload,
     };
   }
   return !data && !index ? null : getBoardById(boardId);
 };
 
-const deleteById = async boardId => {
-  const indexOfBoard = boards.findIndex(el => el.id === boardId);
-  const board = boards[indexOfBoard];
+const deleteById = async (boardId) => {
+  const indexOfBoard = DB.findIndex((el) => el.id === boardId);
+  const board = DB[indexOfBoard];
   let deleted = null;
-  if (indexOfBoard !== -1 && Object.keys(board).length) {
-    deleted = boards.splice(indexOfBoard, 1);
+  if (indexOfBoard !== -1 && board && Object.keys(board).length) {
+    deleted = DB.splice(indexOfBoard, 1);
   }
-  const message = !deleted ? null : `Board ${board.title} with id ${boardId} was deleted`;
+  const message = !deleted ? null : `Board ${board?.title} with id ${boardId} was deleted`;
   return Promise.resolve(message);
 };
 
-module.exports = {
-  getAllBoards,
-  getBoardById,
-  createBoard,
-  updateBoard,
-  deleteById
-};
+module.exports = { createBoard, deleteById, getAllBoards, getBoardById, updateBoard };

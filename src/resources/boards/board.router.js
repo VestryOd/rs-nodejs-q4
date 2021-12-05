@@ -1,84 +1,94 @@
-const router = require('express').Router();
-const boardsService = require('./board.service');
+const express = require('express');
+
+const { CustomError } = require('../../common/utils');
 const taskRouter = require('../tasks/task.router');
-const { CustomError, catchErrors } = require('../../common/utils');
+const boardsService = require('./board.service');
+
+const router = express.Router();
 
 router
   .route('/')
-  .get(
-    catchErrors(async (req, res, next) => {
+  .get(async (_req, res, next) => {
+    try {
       const boards = await boardsService.getAll();
       if (!boards) {
         return next(new CustomError({ status: 400, message: 'Bad request' }));
       }
       return res.status(200).json(boards);
-      // return true;
-    })
-  )
-  .post(
-    catchErrors(async (req, res, next) => {
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .post(async (req, res, next) => {
+    try {
       const board = await boardsService.create({ ...req.body });
       if (!(board && Object.entries(board).length)) {
         return next(
           new CustomError({
             status: 400,
-            message: '"Can\'t create, check your request"'
-          })
+            message: '"Can\'t create, check your request"',
+          }),
         );
       }
       return res.status(201).json(board);
-      // return true;
-    })
-  );
+    } catch (error) {
+      return next(error);
+    }
+  });
 
 router
   .route('/:boardId')
-  .get(
-    catchErrors(async (req, res, next) => {
-      const board = await boardsService.getById(req.params.boardId);
+  .get(async (req, res, next) => {
+    try {
+      const { boardId } = req.params;
+      const board = boardId && (await boardsService.getById(boardId));
       if (!(board && Object.entries(board).length)) {
         return next(
           new CustomError({
             status: 404,
-            message: `Board with id: ${req.params.boardId} not found`
-          })
+            message: `Board with id: ${boardId} not found`,
+          }),
         );
       }
       return res.status(200).json(board);
-      // return true;
-    })
-  )
-  .put(
-    catchErrors(async (req, res, next) => {
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .put(async (req, res, next) => {
+    try {
       const { boardId } = req.params;
-      const board = await boardsService.update(boardId, { ...req.body });
+      const board = boardId && (await boardsService.update(boardId, { ...req.body }));
       if (!board) {
         return next(
           new CustomError({
             status: 400,
-            message: `Can't update, board with id: ${req.params.boardId} not found`
-          })
+            message: `Can't update, board with id: ${boardId} not found`,
+          }),
         );
       }
-      return  res.status(200).json(board);
-      // return true;
-    })
-  )
-  .delete(
-    catchErrors(async (req, res, next) => {
-      const message = await boardsService.remove(req.params.boardId);
+      return res.status(200).json(board);
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .delete(async (req, res, next) => {
+    try {
+      const { boardId } = req.params;
+      const message = boardId && (await boardsService.remove(boardId));
       if (!message) {
         return next(
           new CustomError({
             status: 404,
-            message: `Board with id: ${req.params.boardId} not found`
-          })
+            message: `Board with id: ${boardId} not found`,
+          }),
         );
       }
       return res.status(200).json(message);
-      // return true;
-    })
-  );
+    } catch (error) {
+      return next(error);
+    }
+  });
 
 router.use('/:boardId/tasks', taskRouter);
 

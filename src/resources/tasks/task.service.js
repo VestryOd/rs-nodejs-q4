@@ -1,33 +1,37 @@
 const {
+  createTask,
+  deleteTaskByBoard,
   getAllTasksByBoardId,
   getTaskById,
-  createTask,
-  updateTaskInfo,
   removeTaskById,
-  deleteTaskByBoard,
+  updateTaskInfo,
   updateTaskWhenUserDeleted,
 } = require('./task.memory.repository');
 
-const getAllByBoardId = async boardId => getAllTasksByBoardId(boardId);
+const getAllByBoardId = async (boardId) => getAllTasksByBoardId(boardId);
 
-const getById = async taskId => getTaskById(taskId);
+const getById = async (taskId) => getTaskById(taskId);
 
-const create = async task => createTask(task);
+const create = async (task) => createTask(task);
 
-const update = async (taskId, boardId, payload) => updateTaskInfo(taskId, boardId, payload);
+const update = async (
+  taskId,
+  boardId,
+  payload,
+) => updateTaskInfo(taskId, boardId, payload);
 
-const deleteById = async taskId => removeTaskById(taskId);
+const deleteById = async (taskId) => removeTaskById(taskId);
 
-const clearTasksByBoardId = async boardId => deleteTaskByBoard(boardId);
+const clearTasksByBoardId = async (boardId) => deleteTaskByBoard(boardId);
 
-const updateTasks = async userId => updateTaskWhenUserDeleted(userId);
+const updateTasks = async (userId) => updateTaskWhenUserDeleted(userId);
 
 module.exports = {
+  clearTasksByBoardId,
+  create,
+  deleteById,
   getAllByBoardId,
   getById,
-  create,
   update,
-  deleteById,
-  clearTasksByBoardId,
-  updateTasks
+  updateTasks,
 };

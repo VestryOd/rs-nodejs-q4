@@ -1,44 +1,44 @@
-const users = require('../../common/db/users.json');
-const User = require('./user.model.js');
+const usersDocument = require('../../common/db/users') ;
+const User = require('./user.model');
 
-const getAll = async () => Promise.resolve(users);
+const DB = usersDocument.map((el) => new User(el));
 
-const getUserById = async userId => {
-  const result = users.find(user => user.id === userId);
+const getAllUsers = async () =>
+Promise.resolve(DB.map((el) => User.toResponse(el)));
+
+const getUserById = async (userId) => {
+  const result = DB.find((user) => user.id === userId);
   if (!result) {
     return null;
   }
-  return Promise.resolve(result);
+  return Promise.resolve(User.toResponse(result));
 };
 
-const updateUserInfo = async ({ userId, payload }) => {
-  const indexOfUser = users.findIndex(el => el.id === userId);
-  if (indexOfUser === -1) return null;
-  const updatedUser = {
-    ...users[indexOfUser],
-    ...payload
-  };
-  users[indexOfUser] = updatedUser;
-  return Promise.resolve({ ...updatedUser });
+const updateUserInfo = async ({
+  userId,
+  payload,
+}) => {
+  const index = DB.findIndex((el) => el.id === userId);
+  const user = DB[index];
+  const updated = { ...user, ...{ id: userId, ...payload } };
+  DB.splice(index, 1, updated);
+  return Promise.resolve(User.toResponse(updated));
 };
 
-const createUser = async payload => {
+const createUser = async (payload) => {
   const user = new User(payload);
-  users.push(user);
+  DB.push(user);
   return Promise.resolve(User.toResponse(user));
 };
 
-const removeUserById = async userId => {
-  const indexOfUser = users.findIndex(el => el.id === userId);
-  const user = users[indexOfUser];
+const removeUserById = async (userId) => {
+  const indexOfUser = DB.findIndex((el) => el.id === userId);
+  const user = DB[indexOfUser];
   let deleted = null;
-  if (indexOfUser && Object.keys(user).length) {
-    deleted = users.splice(indexOfUser, 1);
+  if (indexOfUser && typeof user === 'object' && Object.keys(user)?.length) {
+    deleted = DB.splice(indexOfUser, 1);
   }
-  return !deleted || !deleted?.length
-    ? null
-    : `User ${user.name} with id ${userId} was deleted`;
+  return !deleted || !deleted?.length ? null : `User ${user?.name} with id ${userId} was deleted`;
 };
 
-
-module.exports = { getAll, getUserById, updateUserInfo, createUser, removeUserById };
+module.exports = { createUser, getAllUsers, getUserById, removeUserById, updateUserInfo };

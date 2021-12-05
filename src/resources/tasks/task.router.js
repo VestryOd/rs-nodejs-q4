@@ -1,81 +1,96 @@
-const router = require('express').Router({ mergeParams: true });
+const express = require('express');
+
+const { CustomError } = require('../../common/utils');
 const taskService = require('./task.service');
-const { CustomError, catchErrors } = require('../../common/utils');
+
+const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
-  .get(
-    catchErrors(async (req, res, next) => {
-      const tasks = await taskService.getAllByBoardId(req.params.boardId);
+  .get(async (req, res, next) => {
+    try {
+      const { boardId } = req.params;
+      const tasks = boardId && (await taskService.getAllByBoardId(boardId));
       if (!tasks) {
         return next(new CustomError({ status: 400, message: 'Bad request' }));
       }
       return res.status(200).json(tasks);
-      // return true;
-    })
-  )
-  .post(
-    catchErrors(async (req, res, next) => {
-      const task = await taskService.create({ ...req.body, boardId: req.params.boardId });
-      if (!task) {return next(
-        new CustomError({
-          status: 400,
-          message: '"Can\'t create, check your request"'
-        })
-      );
-      }
-      return res.status(201).json(task);
-      // return true;
-    })
-  );
-
-router
-  .route('/:taskId')
-  .get(
-    catchErrors(async (req, res, next) => {
-      const task = await taskService.getById(req.params?.taskId);
-      if (!((task && Object.entries(task).length))) {
-        return next(
-          new CustomError({
-            status: 404,
-            message: `Task with id: ${req.params.taskId} not found`
-          })
-        );
-      }
-      return res.status(200).json(task);
-      // return true;
-    })
-  )
-  .put(
-    catchErrors(async (req, res, next) => {
-      const { taskId, boardId } = req.params;
-      const task = await taskService.update(taskId, boardId, { ...req.body });
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .post(async (req, res, next) => {
+    try {
+      const { boardId } = req.params;
+      const payload = req.body;
+      const task = await taskService.create({ ...payload, boardId });
       if (!task) {
         return next(
           new CustomError({
             status: 400,
-            message: `Can't update, task with id: ${req.params.taskId} not found`
-          })
+            message: '"Can\'t create, check your request"',
+          }),
+        );
+      }
+      return res.status(201).json(task);
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+router
+  .route('/:taskId')
+  .get(async (req, res, next) => {
+    try {
+      const { taskId } = req.params;
+      const task = taskId && (await taskService.getById(taskId));
+      if (!(task && task && Object.entries(task)?.length)) {
+        return next(
+          new CustomError({
+            status: 404,
+            message: `Task with id: ${taskId} not found`,
+          }),
         );
       }
       return res.status(200).json(task);
-      // return true;
-    })
-  )
-  .delete(
-    catchErrors(async (req, res, next) => {
-      const message = await taskService.deleteById(req.params.taskId);
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .put(async (req, res, next) => {
+    try {
+      const { taskId, boardId } = req.params;
+      const task =
+        taskId && boardId && (await taskService.update(taskId, boardId, { ...req.body }));
+      if (!task) {
+        return next(
+          new CustomError({
+            status: 400,
+            message: `Can't update, task with id: ${taskId} not found`,
+          }),
+        );
+      }
+      return res.status(200).json(task);
+    } catch (error) {
+      return next(error);
+    }
+  })
+  .delete(async (req, res, next) => {
+    try {
+      const { taskId } = req.params;
+      const message = taskId && (await taskService.deleteById(taskId));
       if (!message) {
         return next(
           new CustomError({
             status: 404,
-            message: `Task with id: ${req.params.taskId} not found`
-          })
+            message: `Task with id: ${taskId} not found`,
+          }),
         );
       }
       return res.status(200).json(message);
-      // return true;
-    })
-  );
+    } catch (error) {
+      return next(error);
+    }
+  });
 
 module.exports = router;
