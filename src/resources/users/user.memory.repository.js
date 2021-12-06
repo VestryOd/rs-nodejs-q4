@@ -1,12 +1,11 @@
 const usersDocument = require('../../common/db/users.json') ;
-
-console.log('--userDocument', usersDocument);
-
 const User = require('./user.model');
 const { writeToFile } = require('../../common/utils');
 const { usersPath } = require('../../common/constants');
 
-const DB = usersDocument?.map((el) => new User(el));
+const entitiesArray = typeof usersDocument === 'string'
+    ? JSON.parse(usersDocument) : usersDocument;
+const DB = entitiesArray?.map((el) => new User(el));
 
 const getAllUsers = async () =>
 Promise.resolve(DB.map((el) => User.toResponse(el)));
@@ -33,6 +32,7 @@ const updateUserInfo = async ({
 
 const createUser = async (payload) => {
   const user = new User(payload);
+  console.log('--createUser', DB);
   DB.push(user);
   writeToFile(usersPath, JSON.stringify(DB));
   return Promise.resolve(User.toResponse(user));

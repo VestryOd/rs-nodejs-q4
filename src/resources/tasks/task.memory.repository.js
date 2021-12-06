@@ -3,7 +3,9 @@ const Task = require('./task.model');
 const { writeToFile } = require('../../common/utils');
 const { tasksPath } = require('../../common/constants');
 
-let DB = tasksDocument?.map((el) => new Task(el));
+const entitiesArray = typeof tasksDocument === 'string'
+  ? JSON.parse(tasksDocument) : tasksDocument;
+let DB = entitiesArray?.map((el) => new Task(el));
 
 const getAllTasksByBoardId = async (boardId) =>
 Promise.resolve(DB.filter((task) => task.boardId === boardId));
@@ -56,7 +58,7 @@ const deleteTaskByBoard = async (boardId) => {
 };
 
 const updateTaskWhenUserDeleted = async (userId) => {
-  DB.forEach((task, index) => {
+  DB?.forEach((task, index) => {
     if (task.userId === userId) {
       DB[index] = { ...task, userId: null };
     }

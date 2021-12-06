@@ -3,13 +3,15 @@ const Board = require('./board.model');
 const { writeToFile } = require('../../common/utils');
 const { boardsPath } = require('../../common/constants');
 
-const DB = boardsDocument?.map((el) => new Board(el));
+const entitiesArray = typeof boardsDocument === 'string'
+    ? JSON.parse(boardsDocument) : boardsDocument;
+const DB = entitiesArray?.map((el) => new Board(el));
 
 const getAllBoards = async () => Promise.resolve(DB);
 
 const findBoard = (boardId) => {
   const board = { index: 0, data: {} };
-  DB.forEach((el, i) => {
+  DB?.forEach((el, i) => {
     if (el.id === boardId) {
       board.index = i;
       board.data = { ...el };

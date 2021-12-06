@@ -1,6 +1,6 @@
-const usersPath = 'src/common/db/users.js';
-const boardsPath = 'src/common/db/boards.js';
-const tasksPath = 'src/common/db/tasks.js';
+const usersPath = 'src/common/db/users.json';
+const boardsPath = 'src/common/db/boards.json';
+const tasksPath = 'src/common/db/tasks.json';
 
 module.exports = {
   usersPath,

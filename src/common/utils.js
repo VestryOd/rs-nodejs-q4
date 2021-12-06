@@ -19,11 +19,13 @@ class CustomError extends Error {
 
 const writeToFile = (filename, data) => {
   const pathToFile = path.resolve(filename);
-  fs.writeFile(pathToFile, JSON.stringify(data), 'utf-8', error => {
-    if (error) {
-      console.error(`Error caught, reason: ${error}`);
-    }
-  })
+  if (data) {
+    fs.writeFileSync(pathToFile, JSON.stringify(data), 'utf-8', error => {
+      if (error) {
+        console.error(`Error caught, reason: ${error}`);
+      }
+    })
+  }
 };
 
 module.exports = {
