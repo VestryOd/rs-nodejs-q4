@@ -1,7 +1,12 @@
-const usersDocument = require('../../common/db/users') ;
-const User = require('./user.model');
+const usersDocument = require('../../common/db/users.json') ;
 
-const DB = usersDocument.map((el) => new User(el));
+console.log('--userDocument', usersDocument);
+
+const User = require('./user.model');
+const { writeToFile } = require('../../common/utils');
+const { usersPath } = require('../../common/constants');
+
+const DB = usersDocument?.map((el) => new User(el));
 
 const getAllUsers = async () =>
 Promise.resolve(DB.map((el) => User.toResponse(el)));
@@ -22,12 +27,14 @@ const updateUserInfo = async ({
   const user = DB[index];
   const updated = { ...user, ...{ id: userId, ...payload } };
   DB.splice(index, 1, updated);
+  writeToFile(usersPath, JSON.stringify(DB));
   return Promise.resolve(User.toResponse(updated));
 };
 
 const createUser = async (payload) => {
   const user = new User(payload);
   DB.push(user);
+  writeToFile(usersPath, JSON.stringify(DB));
   return Promise.resolve(User.toResponse(user));
 };
 
@@ -38,6 +45,7 @@ const removeUserById = async (userId) => {
   if (indexOfUser && typeof user === 'object' && Object.keys(user)?.length) {
     deleted = DB.splice(indexOfUser, 1);
   }
+  writeToFile(usersPath, JSON.stringify(DB));
   return !deleted || !deleted?.length ? null : `User ${user?.name} with id ${userId} was deleted`;
 };
 

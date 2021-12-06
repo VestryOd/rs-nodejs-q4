@@ -1,7 +1,9 @@
-const { tasksDocument } = require('../../common/db/tasks');
+const { tasksDocument } = require('../../common/db/tasks.json');
 const Task = require('./task.model');
+const { writeToFile } = require('../../common/utils');
+const { tasksPath } = require('../../common/constants');
 
-let DB = tasksDocument.map((el) => new Task(el));
+let DB = tasksDocument?.map((el) => new Task(el));
 
 const getAllTasksByBoardId = async (boardId) =>
 Promise.resolve(DB.filter((task) => task.boardId === boardId));
@@ -12,6 +14,7 @@ Promise.resolve(DB.find((task) => task.id === taskId) || null);
 const createTask = async (payload) => {
   const task = new Task({ ...payload });
   DB.push(task);
+  writeToFile(tasksPath, JSON.stringify(DB));
   return Promise.resolve(task);
 };
 
@@ -26,6 +29,7 @@ const updateTaskInfo = async (
   if (index && index !== -1) {
     DB.splice(index, 1, updated);
   }
+  writeToFile(tasksPath, JSON.stringify(DB));
   return Promise.resolve(updated);
 };
 
@@ -36,6 +40,7 @@ const removeTaskById = async (taskId) => {
   if (indexOfTask && task && Object.entries(task).length) {
     deleted = DB.splice(indexOfTask, 1);
   }
+  writeToFile(tasksPath, JSON.stringify(DB));
   const result =
     !deleted || !deleted?.length
       ? null
@@ -46,7 +51,7 @@ const removeTaskById = async (taskId) => {
 const deleteTaskByBoard = async (boardId) => {
   DB = DB.filter((task) => task.boardId !== boardId);
   const updated = await getAllTasksByBoardId(boardId);
-
+  writeToFile(tasksPath, JSON.stringify(DB));
   return Promise.resolve(updated);
 };
 
@@ -56,6 +61,7 @@ const updateTaskWhenUserDeleted = async (userId) => {
       DB[index] = { ...task, userId: null };
     }
   });
+  writeToFile(tasksPath, JSON.stringify(DB));
   return Promise.resolve(DB.filter((el) => el.userId === userId));
 };
 
